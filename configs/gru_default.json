@@ -1,0 +1,15 @@
+{
+  "data_file": "8_states/sequence.csv",
+  "starts": [0, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500],
+  "training_length": 100,
+  "training_context_length": 8,
+  "eval_context_length": 8,
+  "N_states": 8,
+  "hidden_size": 4,
+  "dropout_p": 0.15,
+  "num_epochs": 350,
+  "learning_rate": 0.001,
+  "device": null,
+  "seed": 42,
+  "batch_size": 64
+}
