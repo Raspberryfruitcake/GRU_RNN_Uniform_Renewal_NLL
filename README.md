@@ -1,113 +1,116 @@
 # Uniform Renewal Process – RNN/GRU Experiments
 
-This repository contains the code used to train simple RNN and GRU models on the uniform renewal process and evaluate them via true and empirical KL divergence.  
-It is intended for internal use so collaborators can quickly review and reproduce results.
+This repository contains code for training and evaluating simple RNN and GRU models on uniform renewal processes. Models are assessed using both theoretical and empirical KL divergence metrics.
+
+---
+
+## Overview
+
+The codebase implements a systematic comparison of recurrent neural network architectures on renewal process prediction tasks. Each experiment trains models on different slices of a binary sequence and evaluates their performance against both ground-truth analytical distributions and empirical measurements.
 
 ---
 
 ## Repository Structure
-
+```
 renewal_rnns/
-│
-├── processes.py # Renewal FSM, stationary distribution, true conditional P(y|context)
-├── data.py # Dataset loader and empirical P(C), P(y|C)
-├── models.py # GRUModel and VanillaRNNModel definitions
-├── training.py # Generic training loop, Adam, NLL, seeds, grad clipping
-├── evaluation.py # Functions for true KL and empirical KL
-├── analysis.py # Optional PCA helpers
-│
-└── experiments/
-├── base_experiment.py # Shared experiment logic
-├── uniform_gru.py # GRU-specific experiment wrapper
-└── uniform_rnn.py # RNN-specific experiment wrapper
+├── processes.py          # Renewal FSM, stationary distribution, true P(y|context)
+├── data.py               # Dataset loader and empirical distribution estimation
+├── models.py             # GRUModel and VanillaRNNModel implementations
+├── training.py           # Training loop with Adam optimizer, NLL loss, gradient clipping
+├── evaluation.py         # True and empirical KL divergence computation
+└── analysis.py           # PCA and visualization utilities
+
+experiments/
+├── base_experiment.py    # Shared experiment infrastructure
+├── uniform_gru.py        # GRU experiment configuration
+└── uniform_rnn.py        # RNN experiment configuration
 
 scripts/
-├── run_gru_sweep.py
-└── run_rnn_sweep.py
+├── run_gru_sweep.py      # Execute GRU experiments across training slices
+└── run_rnn_sweep.py      # Execute RNN experiments across training slices
 
 configs/
-├── gru_default.json
-└── rnn_default.json
+├── gru_default.json      # Default GRU hyperparameters
+└── rnn_default.json      # Default RNN hyperparameters
 
-results/
+results/                  # Output directory for experiment results
+```
 
-The structure is minimal: every component is separated so it can be inspected or modified independently.
+The modular structure allows independent inspection and modification of individual components.
 
 ---
 
-## What the Experiments Produce
+## Experiment Output
 
-### **run_gru_sweep.py**
-Runs GRU models over multiple training slices.  
-For each slice it computes:
+### GRU Sweep (`run_gru_sweep.py`)
 
-- **True KL divergence**  
-  Computed analytically from the renewal-process FSM.
+Trains GRU models across multiple training slices and computes:
 
-- **Empirical KL divergence**  
-  Computed from empirical P(C) and P(y|C) measured on the same slice.
+- **True KL Divergence**: Analytical computation using the renewal process FSM
+- **Empirical KL Divergence**: Measured from empirical distributions P(C) and P(y|C)
 
-Output is written to a JSON file:
-
-results/gru_results.json
-
-Each entry in the JSON contains:
-
+**Output**: `results/gru_results.json`
+```json
 {
-"range": "start-end",
-"true_KL_divergence": ...,
-"empirical_KL_divergence": ...
+  "range": "start-end",
+  "true_KL_divergence": <value>,
+  "empirical_KL_divergence": <value>
 }
+```
 
+### RNN Sweep (`run_rnn_sweep.py`)
 
-### **run_rnn_sweep.py**
-Same as the GRU sweep, but using the vanilla RNN model.  
-Outputs:
+Identical to GRU sweep using vanilla RNN architecture.
 
-results/rnn_results.json
+**Output**: `results/rnn_results.json`
 
-
-The two outputs are directly comparable: same slices, same conditions, different architectures.
-
----
-
-## What a Single Experiment Does Internally
-
-When running either RNN or GRU:
-
-1. **Read a slice** of the binary sequence  
-   (`training_start`, `training_length`).
-
-2. **Create sliding-window dataset**  
-   Context length = `training_context_length`.
-
-3. **Train the model**  
-   - NLL (cross-entropy)  
-   - Adam  
-   - Weight decay  
-   - Gradient clipping  
-   - Deterministic seeds  
-
-4. **Evaluate on all possible contexts of length m**  
-   - Compute exact P(y|context) from FSM → **true KL**  
-   - Compute empirical P(y|context) → **empirical KL**
-
-5. **Store results in JSON**
+Results from both sweeps are directly comparable under identical experimental conditions.
 
 ---
 
-## Minimal Usage
+## Experimental Pipeline
 
-### GRU sweep
+Each experiment performs the following steps:
+
+1. **Data Preparation**: Extract training slice from binary sequence
+2. **Dataset Construction**: Generate sliding-window contexts of length *m*
+3. **Model Training**:
+   - Loss: Negative log-likelihood (cross-entropy)
+   - Optimizer: Adam with weight decay
+   - Gradient clipping for stability
+   - Fixed random seeds for reproducibility
+4. **Evaluation**:
+   - Compute P(y|context) from FSM → **True KL divergence**
+   - Estimate P(y|context) empirically → **Empirical KL divergence**
+5. **Results Storage**: Save metrics to JSON
+
+---
+
+## Usage
+
+### Run GRU Experiments
+```bash
 python scripts/run_gru_sweep.py --config configs/gru_default.json
+```
 
-
-### RNN sweep
+### Run RNN Experiments
+```bash
 python scripts/run_rnn_sweep.py --config configs/rnn_default.json
+```
 
-
-Both produce a JSON file summarizing KL performance across slices.
+Both commands generate JSON files in `results/` summarizing model performance across training slices.
 
 ---
 
-This README is intentionally simple so colleagues can navigate the repo and understand exactly what the experiment scripts produce.
+## Requirements
+
+- Python 3.8+
+- PyTorch
+- NumPy
+- Additional dependencies listed in `requirements.txt`
+
+---
+
+## Notes
+
+This repository is designed for internal collaboration and result reproduction. The codebase prioritizes clarity and modularity to facilitate review and extension by team members.
