@@ -1,0 +1,21 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "uniform-renewal-rnns"
+version = "0.1.0"
+description = "GRU and vanilla RNN models trained on a uniform renewal process with exact KL evaluation."
+authors = [
+  { name = "Your Name", email = "you@example.com" }
+]
+requires-python = ">=3.9"
+dependencies = [
+  "numpy",
+  "torch",
+  "tqdm",
+  "matplotlib",
+]
+
+[project.urls]
+"Source" = "https://github.com/your-username/uniform-renewal-rnns"
